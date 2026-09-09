@@ -62,4 +62,3 @@ async def run_job(job: Job) -> None:
     finally:
         await job.publish({"type": "done"})
         job.status = JobStatus.COMPLETED
-        await job.close_events()

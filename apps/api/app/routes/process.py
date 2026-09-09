@@ -1,11 +1,13 @@
-"""HTTP routes for starting transcript processing jobs."""
+"""HTTP routes for starting transcript processing jobs and streaming progress."""
 
 from __future__ import annotations
 
 import asyncio
-from typing import List
+import json
+from typing import AsyncIterator, List
 
 from fastapi import APIRouter, HTTPException
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field, field_validator
 
 from app.jobs import job_store, run_job
@@ -36,10 +38,22 @@ async def start_process(body: ProcessRequest) -> ProcessResponse:
     return ProcessResponse(job_id=job.id)
 
 
-@router.get("/process/{job_id}")
-async def get_job(job_id: str) -> dict[str, str]:
-    """Lightweight lookup used while SSE is not yet wired."""
+@router.get("/process/{job_id}/events")
+async def stream_process_events(job_id: str) -> StreamingResponse:
     job = job_store.get(job_id)
     if job is None:
         raise HTTPException(status_code=404, detail="Job not found")
-    return {"job_id": job.id, "status": job.status.value}
+
+    async def event_stream() -> AsyncIterator[str]:
+        async for event in job.stream_events():
+            yield f"data: {json.dumps(event, ensure_ascii=False)}\n\n"
+
+    return StreamingResponse(
+        event_stream(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        },
+    )
