@@ -29,7 +29,7 @@ export function DownloadButton({
       type="button"
       onClick={onDownload}
       disabled={disabled}
-      className="rounded-full border-0 bg-[color-mix(in_srgb,var(--color-divider)_65%,var(--color-bg))] px-3.5 py-2.5 text-[13px] font-semibold leading-tight text-accent transition-colors hover:bg-[color-mix(in_srgb,var(--color-accent)_10%,var(--color-bg))] focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-40"
+      className="radius border-0 bg-[color-mix(in_srgb,var(--color-divider)_65%,var(--color-bg))] px-3.5 py-2.5 text-[13px] font-semibold leading-tight text-accent transition-colors hover:bg-[color-mix(in_srgb,var(--color-accent)_10%,var(--color-bg))] focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-40"
     >
       {label}
     </button>

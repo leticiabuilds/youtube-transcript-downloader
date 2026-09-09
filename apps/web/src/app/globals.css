@@ -9,6 +9,8 @@
   --color-subtle: #aaaaaa;
   --color-faint: #bbbbbb;
   --color-divider: #ece9e4;
+  /* 0.25rem at a 16px root font size */
+  --radius: 4px;
 }
 
 @theme inline {
@@ -20,6 +22,7 @@
   --color-subtle: #aaaaaa;
   --color-faint: #bbbbbb;
   --color-divider: #ece9e4;
+  --radius: 4px;
   --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-serif: var(--font-instrument-serif), Georgia, serif;
 }
@@ -32,4 +35,8 @@ body {
   background-color: var(--color-bg);
   color: var(--color-body);
   font-family: var(--font-sans);
+}
+
+.radius {
+  border-radius: var(--radius);
 }

@@ -75,7 +75,7 @@ export function UrlInputForm({
           onChange={(event) => setRawUrls(event.target.value)}
           disabled={disabled}
           placeholder={"https://www.youtube.com/watch?v=...\nhttps://youtu.be/..."}
-          className="w-full resize-y rounded border border-divider bg-canvas px-3 py-3 text-sm leading-relaxed text-ink outline-none placeholder:text-subtle focus:border-ink disabled:cursor-not-allowed disabled:opacity-60"
+          className="radius w-full resize-y border border-divider bg-canvas px-3 py-3 text-sm leading-relaxed text-ink outline-none placeholder:text-subtle focus:border-ink disabled:cursor-not-allowed disabled:opacity-60"
         />
         <p className="text-[13px] text-subtle">
           {parsedCount === 1
@@ -97,7 +97,7 @@ export function UrlInputForm({
             setLanguage(event.target.value as TranscriptLanguage)
           }
           disabled={disabled}
-          className="w-full rounded border border-divider bg-canvas px-3 py-3 text-sm text-ink outline-none focus:border-ink disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+          className="radius w-full border border-divider bg-canvas px-3 py-3 text-sm text-ink outline-none focus:border-ink disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
         >
           <option value="en">English</option>
           <option value="pt">Portuguese</option>
@@ -113,7 +113,7 @@ export function UrlInputForm({
       <button
         type="submit"
         disabled={disabled || parsedCount === 0}
-        className="rounded-full border-0 bg-[color-mix(in_srgb,var(--color-divider)_65%,var(--color-bg))] px-3.5 py-2.5 text-[13px] font-semibold leading-tight text-accent transition-colors hover:bg-[color-mix(in_srgb,var(--color-accent)_10%,var(--color-bg))] focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-40"
+        className="radius border-0 bg-[color-mix(in_srgb,var(--color-divider)_65%,var(--color-bg))] px-3.5 py-2.5 text-[13px] font-semibold leading-tight text-accent transition-colors hover:bg-[color-mix(in_srgb,var(--color-accent)_10%,var(--color-bg))] focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-40"
       >
         {isProcessing || isSubmitting ? "Processing..." : "Start processing"}
       </button>
