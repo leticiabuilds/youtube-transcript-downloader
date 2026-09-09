@@ -3,8 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "dev": "echo \"api app placeholder: FastAPI will be bootstrapped in a later task\"",
-    "build": "echo \"api app placeholder\"",
-    "lint": "echo \"api app placeholder\""
+    "dev": ".venv/bin/uvicorn app.main:app --reload --host 127.0.0.1 --port 8000",
+    "build": "echo \"api has no build step\"",
+    "lint": "echo \"api lint placeholder\""
   }
 }
