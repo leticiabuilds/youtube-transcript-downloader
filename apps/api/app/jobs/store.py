@@ -1,0 +1,25 @@
+"""Process-memory job store. Jobs are lost when the API process exits."""
+
+from __future__ import annotations
+
+import uuid
+from typing import Dict, List, Optional
+
+from app.jobs.models import Job
+
+
+class JobStore:
+    def __init__(self) -> None:
+        self._jobs: Dict[str, Job] = {}
+
+    def create(self, urls: List[str]) -> Job:
+        job_id = uuid.uuid4().hex
+        job = Job(id=job_id, urls=urls)
+        self._jobs[job_id] = job
+        return job
+
+    def get(self, job_id: str) -> Optional[Job]:
+        return self._jobs.get(job_id)
+
+
+job_store = JobStore()
