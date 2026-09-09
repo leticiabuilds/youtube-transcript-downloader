@@ -1,3 +1,5 @@
+import { ProcessWorkspace } from "@/components/ProcessWorkspace";
+
 export default function Home() {
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col px-6 py-24 sm:px-8 sm:py-32">
@@ -10,6 +12,8 @@ export default function Home() {
           zip of successful transcripts. No deploy. No database.
         </p>
       </header>
+
+      <ProcessWorkspace />
     </main>
   );
 }
