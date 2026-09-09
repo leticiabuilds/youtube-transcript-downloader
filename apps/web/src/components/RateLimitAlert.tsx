@@ -12,7 +12,7 @@ export function RateLimitAlert({ message }: RateLimitAlertProps) {
   return (
     <div
       role="alert"
-      className="rounded-[14px] border border-accent px-4 py-3 text-sm text-accent"
+      className="rounded border border-divider bg-canvas px-3 py-3 text-sm text-accent shadow-[0_6px_20px_-8px_rgba(0,0,0,0.12)]"
     >
       <p className="font-medium text-ink">YouTube rate limit reached</p>
       <p className="mt-1">{message}</p>
