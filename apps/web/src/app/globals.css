@@ -1,0 +1,35 @@
+@import "tailwindcss";
+
+:root {
+  --color-bg: #faf9f7;
+  --color-accent: #ad0000;
+  --color-ink: #1a1a1a;
+  --color-muted: #888888;
+  --color-body: #555555;
+  --color-subtle: #aaaaaa;
+  --color-faint: #bbbbbb;
+  --color-divider: #ece9e4;
+}
+
+@theme inline {
+  --color-canvas: #faf9f7;
+  --color-accent: #ad0000;
+  --color-ink: #1a1a1a;
+  --color-muted: #888888;
+  --color-body: #555555;
+  --color-subtle: #aaaaaa;
+  --color-faint: #bbbbbb;
+  --color-divider: #ece9e4;
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-serif: var(--font-instrument-serif), Georgia, serif;
+}
+
+html {
+  color-scheme: light;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-body);
+  font-family: var(--font-sans);
+}
