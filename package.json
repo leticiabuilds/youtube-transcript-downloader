@@ -6,6 +6,8 @@
     "apps/*"
   ],
   "scripts": {
+    "setup:api": "node scripts/setup-api.mjs",
+    "local-dev": "npm run setup:api && turbo run dev",
     "dev": "turbo run dev",
     "build": "turbo run build",
     "lint": "turbo run lint"
