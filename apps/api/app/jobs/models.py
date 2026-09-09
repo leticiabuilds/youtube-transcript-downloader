@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, AsyncIterator, Dict, List
+from typing import Any, AsyncIterator, Dict, List, Tuple
 
 
 class JobStatus(str, Enum):
@@ -18,6 +18,7 @@ class JobStatus(str, Enum):
 class Job:
     id: str
     urls: List[str]
+    language_codes: Tuple[str, ...] = ("en",)
     status: JobStatus = JobStatus.PENDING
     event_history: List[Dict[str, Any]] = field(default_factory=list)
     _waiters: List[asyncio.Event] = field(default_factory=list)

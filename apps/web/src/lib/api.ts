@@ -1,5 +1,7 @@
 const DEFAULT_API_BASE_URL = "http://127.0.0.1:8000";
 
+export type TranscriptLanguage = "en" | "pt";
+
 export function getApiBaseUrl(): string {
   return process.env.NEXT_PUBLIC_API_BASE_URL ?? DEFAULT_API_BASE_URL;
 }
@@ -12,13 +14,16 @@ export type StartProcessResponse = {
   job_id: string;
 };
 
-export async function startProcess(urls: string[]): Promise<StartProcessResponse> {
+export async function startProcess(
+  urls: string[],
+  language: TranscriptLanguage = "en",
+): Promise<StartProcessResponse> {
   const response = await fetch(`${getApiBaseUrl()}/api/process`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ urls }),
+    body: JSON.stringify({ urls, language }),
   });
 
   if (!response.ok) {

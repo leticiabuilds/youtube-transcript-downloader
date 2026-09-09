@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Sequence, Tuple
 
 from youtube_transcript_api import (
     AgeRestricted,
@@ -23,6 +24,11 @@ from app.transcripts.exceptions import DefinitiveTranscriptError, RateLimitError
 from app.transcripts.filenames import transcript_filename
 from app.transcripts.urls import extract_video_id
 
+LANGUAGE_PRESETS: dict[str, Tuple[str, ...]] = {
+    "en": ("en",),
+    "pt": ("pt", "pt-BR"),
+}
+
 
 @dataclass(frozen=True)
 class TranscriptResult:
@@ -33,25 +39,26 @@ class TranscriptResult:
     language_code: str
 
 
-def fetch_transcript(url: str) -> TranscriptResult:
-    """Extract the first available transcript for a YouTube URL as plain text.
+def resolve_language_codes(language: str) -> Tuple[str, ...]:
+    codes = LANGUAGE_PRESETS.get(language)
+    if codes is None:
+        raise DefinitiveTranscriptError(f"Unsupported language: {language}")
+    return codes
 
-    Uses whichever caption track YouTube exposes first (manual preferred by the
-    library list order, then generated). Does not require a language picker.
-    """
+
+def fetch_transcript(
+    url: str,
+    languages: Sequence[str] = ("en",),
+) -> TranscriptResult:
+    """Extract a plain-text transcript in one of the requested languages."""
     video_id = extract_video_id(url)
     filename = transcript_filename(video_id)
+    preferred = tuple(languages) if languages else ("en",)
 
     try:
         api = YouTubeTranscriptApi()
         transcript_list = api.list(video_id)
-        try:
-            transcript = next(iter(transcript_list))
-        except StopIteration as exc:
-            raise DefinitiveTranscriptError(
-                "No transcript available for this video"
-            ) from exc
-
+        transcript = transcript_list.find_transcript(list(preferred))
         fetched = transcript.fetch()
     except RateLimitError:
         raise
@@ -80,7 +87,10 @@ def fetch_transcript(url: str) -> TranscriptResult:
     except TranscriptsDisabled as exc:
         raise DefinitiveTranscriptError("Transcripts are disabled for this video") from exc
     except NoTranscriptFound as exc:
-        raise DefinitiveTranscriptError("No transcript available for this video") from exc
+        joined = ", ".join(preferred)
+        raise DefinitiveTranscriptError(
+            f"No transcript available in the requested language(s): {joined}"
+        ) from exc
     except CouldNotRetrieveTranscript as exc:
         raise DefinitiveTranscriptError(
             f"Could not retrieve transcript: {exc.cause}"

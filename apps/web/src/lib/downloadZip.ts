@@ -29,13 +29,23 @@ export function downloadBlob(blob: Blob, filename: string): void {
   URL.revokeObjectURL(objectUrl);
 }
 
-export async function downloadTranscriptZip(
+export async function downloadTranscripts(
   files: TranscriptFile[],
   zipName = "youtube-transcripts.zip",
 ): Promise<void> {
   if (files.length === 0) {
     return;
   }
+
+  if (files.length === 1) {
+    const file = files[0];
+    const blob = new Blob([file.content], {
+      type: "text/plain;charset=utf-8",
+    });
+    downloadBlob(blob, file.filename);
+    return;
+  }
+
   const blob = await buildTranscriptZip(files);
   downloadBlob(blob, zipName);
 }

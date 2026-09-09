@@ -6,7 +6,7 @@ import logging
 
 from app.jobs.models import Job, JobStatus
 from app.processing import TranscriptBatchProcessor
-from app.transcripts import TranscriptResult
+from app.transcripts import TranscriptResult, fetch_transcript
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +48,11 @@ async def run_job(job: Job) -> None:
     async def on_rate_limited(message: str) -> None:
         await job.publish({"type": "rate_limited", "message": message})
 
+    def fetch_for_job(url: str) -> TranscriptResult:
+        return fetch_transcript(url, languages=job.language_codes)
+
     processor = TranscriptBatchProcessor(
+        fetch_fn=fetch_for_job,
         on_started=on_started,
         on_succeeded=on_succeeded,
         on_definitive_failure=on_definitive_failure,

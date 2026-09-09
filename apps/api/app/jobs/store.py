@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import uuid
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Sequence, Tuple
 
 from app.jobs.models import Job
 
@@ -12,9 +12,14 @@ class JobStore:
     def __init__(self) -> None:
         self._jobs: Dict[str, Job] = {}
 
-    def create(self, urls: List[str]) -> Job:
+    def create(
+        self,
+        urls: List[str],
+        language_codes: Sequence[str] = ("en",),
+    ) -> Job:
         job_id = uuid.uuid4().hex
-        job = Job(id=job_id, urls=urls)
+        codes: Tuple[str, ...] = tuple(language_codes) if language_codes else ("en",)
+        job = Job(id=job_id, urls=urls, language_codes=codes)
         self._jobs[job_id] = job
         return job
 

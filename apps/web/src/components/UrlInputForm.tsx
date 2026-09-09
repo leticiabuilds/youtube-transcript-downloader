@@ -1,22 +1,40 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 
-import { startProcess } from "@/lib/api";
+import { startProcess, type TranscriptLanguage } from "@/lib/api";
 import { parseYoutubeUrls } from "@/lib/urls";
 
 type UrlInputFormProps = {
   isProcessing: boolean;
-  onJobStarted: (payload: { jobId: string; urls: string[] }) => void;
+  clearSignal: number;
+  onJobStarted: (payload: {
+    jobId: string;
+    urls: string[];
+    language: TranscriptLanguage;
+  }) => void;
 };
 
-export function UrlInputForm({ isProcessing, onJobStarted }: UrlInputFormProps) {
+export function UrlInputForm({
+  isProcessing,
+  clearSignal,
+  onJobStarted,
+}: UrlInputFormProps) {
   const [rawUrls, setRawUrls] = useState("");
+  const [language, setLanguage] = useState<TranscriptLanguage>("en");
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const disabled = isProcessing || isSubmitting;
   const parsedCount = parseYoutubeUrls(rawUrls).length;
+
+  useEffect(() => {
+    if (clearSignal === 0) {
+      return;
+    }
+    setRawUrls("");
+    setError(null);
+  }, [clearSignal]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -30,8 +48,8 @@ export function UrlInputForm({ isProcessing, onJobStarted }: UrlInputFormProps) 
 
     setIsSubmitting(true);
     try {
-      const result = await startProcess(urls);
-      onJobStarted({ jobId: result.job_id, urls });
+      const result = await startProcess(urls, language);
+      onJobStarted({ jobId: result.job_id, urls, language });
     } catch (submitError) {
       const message =
         submitError instanceof Error
@@ -57,7 +75,7 @@ export function UrlInputForm({ isProcessing, onJobStarted }: UrlInputFormProps) 
           onChange={(event) => setRawUrls(event.target.value)}
           disabled={disabled}
           placeholder={"https://www.youtube.com/watch?v=...\nhttps://youtu.be/..."}
-          className="w-full resize-y border border-divider bg-canvas px-3 py-3 text-sm leading-relaxed text-ink outline-none placeholder:text-subtle focus:border-ink disabled:cursor-not-allowed disabled:opacity-60"
+          className="w-full resize-y rounded-[14px] border border-divider bg-canvas px-4 py-3 text-sm leading-relaxed text-ink outline-none placeholder:text-subtle focus:border-ink disabled:cursor-not-allowed disabled:opacity-60"
         />
         <p className="text-[13px] text-subtle">
           {parsedCount === 1
@@ -65,6 +83,25 @@ export function UrlInputForm({ isProcessing, onJobStarted }: UrlInputFormProps) 
             : `${parsedCount} links ready`}
           . One URL per line.
         </p>
+      </div>
+
+      <div className="space-y-2">
+        <label htmlFor="transcript-language" className="block text-sm text-ink">
+          Transcript language
+        </label>
+        <select
+          id="transcript-language"
+          name="transcript-language"
+          value={language}
+          onChange={(event) =>
+            setLanguage(event.target.value as TranscriptLanguage)
+          }
+          disabled={disabled}
+          className="w-full rounded-[14px] border border-divider bg-canvas px-4 py-3 text-sm text-ink outline-none focus:border-ink disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+        >
+          <option value="en">English</option>
+          <option value="pt">Portuguese</option>
+        </select>
       </div>
 
       {error ? (
@@ -76,7 +113,7 @@ export function UrlInputForm({ isProcessing, onJobStarted }: UrlInputFormProps) 
       <button
         type="submit"
         disabled={disabled || parsedCount === 0}
-        className="border border-ink bg-ink px-4 py-2 text-sm text-canvas transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+        className="rounded-full border border-ink bg-ink px-5 py-2.5 text-sm text-canvas transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
       >
         {isProcessing || isSubmitting ? "Processing..." : "Start processing"}
       </button>

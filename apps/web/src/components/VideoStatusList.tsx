@@ -23,14 +23,14 @@ export function VideoStatusList({ items }: VideoStatusListProps) {
       <h2 className="font-serif text-[24px] font-normal leading-snug text-ink">
         Progress
       </h2>
-      <ul className="divide-y divide-divider border-y border-divider">
+      <ul className="overflow-hidden rounded-[14px] border border-divider divide-y divide-divider">
         {items.map((item) => {
           const isActive = item.status === "processando";
           return (
             <li
               key={item.url}
-              className={`border-l-2 py-4 pl-3 ${
-                isActive ? "border-accent" : "border-transparent"
+              className={`border-l-2 px-4 py-4 ${
+                isActive ? "border-accent bg-canvas" : "border-transparent"
               }`}
             >
               <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4">

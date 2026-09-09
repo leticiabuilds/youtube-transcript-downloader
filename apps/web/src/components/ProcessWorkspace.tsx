@@ -2,13 +2,13 @@
 
 import { useEffect, useRef, useState } from "react";
 
-import { DownloadZipButton } from "@/components/DownloadZipButton";
+import { DownloadButton } from "@/components/DownloadButton";
 import { RateLimitAlert } from "@/components/RateLimitAlert";
 import { UrlInputForm } from "@/components/UrlInputForm";
 import { VideoStatusList } from "@/components/VideoStatusList";
 import { getProcessEventsUrl } from "@/lib/api";
 import {
-  downloadTranscriptZip,
+  downloadTranscripts,
   type TranscriptFile,
 } from "@/lib/downloadZip";
 import {
@@ -52,6 +52,7 @@ export function ProcessWorkspace() {
   const [rateLimitMessage, setRateLimitMessage] = useState<string | null>(null);
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadError, setDownloadError] = useState<string | null>(null);
+  const [clearSignal, setClearSignal] = useState(0);
   const successfulFilesRef = useRef<TranscriptFile[]>([]);
   const isProcessing = activeJob !== null;
   const successfulFiles = collectSuccessfulFiles(items);
@@ -123,6 +124,7 @@ export function ProcessWorkspace() {
       if (parsed.type === "done") {
         source.close();
         setActiveJob(null);
+        setClearSignal((current) => current + 1);
         void finalizeDownload(successfulFilesRef.current);
       }
     };
@@ -145,10 +147,12 @@ export function ProcessWorkspace() {
     setDownloadError(null);
     setIsDownloading(true);
     try {
-      await downloadTranscriptZip(files);
+      await downloadTranscripts(files);
     } catch (error) {
       const message =
-        error instanceof Error ? error.message : "Could not create the zip file.";
+        error instanceof Error
+          ? error.message
+          : "Could not prepare the download.";
       setDownloadError(message);
     } finally {
       setIsDownloading(false);
@@ -159,6 +163,7 @@ export function ProcessWorkspace() {
     <div className="mt-12 space-y-10">
       <UrlInputForm
         isProcessing={isProcessing}
+        clearSignal={clearSignal}
         onJobStarted={({ jobId, urls }) => {
           setStreamError(null);
           setRateLimitMessage(null);
@@ -185,7 +190,7 @@ export function ProcessWorkspace() {
 
       <VideoStatusList items={items} />
 
-      <DownloadZipButton
+      <DownloadButton
         disabled={isProcessing || isDownloading}
         fileCount={successfulFiles.length}
         onDownload={() => {
