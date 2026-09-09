@@ -1,10 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
+import { DownloadZipButton } from "@/components/DownloadZipButton";
+import { RateLimitAlert } from "@/components/RateLimitAlert";
 import { UrlInputForm } from "@/components/UrlInputForm";
 import { VideoStatusList } from "@/components/VideoStatusList";
 import { getProcessEventsUrl } from "@/lib/api";
+import {
+  downloadTranscriptZip,
+  type TranscriptFile,
+} from "@/lib/downloadZip";
 import {
   isProcessEvent,
   type VideoItemState,
@@ -22,11 +28,33 @@ function createInitialItems(urls: string[]): VideoItemState[] {
   }));
 }
 
+function collectSuccessfulFiles(items: VideoItemState[]): TranscriptFile[] {
+  const files: TranscriptFile[] = [];
+  for (const item of items) {
+    if (
+      item.status === "concluido" &&
+      item.filename &&
+      typeof item.content === "string"
+    ) {
+      files.push({
+        filename: item.filename,
+        content: item.content,
+      });
+    }
+  }
+  return files;
+}
+
 export function ProcessWorkspace() {
   const [activeJob, setActiveJob] = useState<ActiveJob | null>(null);
   const [items, setItems] = useState<VideoItemState[]>([]);
   const [streamError, setStreamError] = useState<string | null>(null);
+  const [rateLimitMessage, setRateLimitMessage] = useState<string | null>(null);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
+  const successfulFilesRef = useRef<TranscriptFile[]>([]);
   const isProcessing = activeJob !== null;
+  const successfulFiles = collectSuccessfulFiles(items);
 
   useEffect(() => {
     if (!activeJob) {
@@ -68,16 +96,34 @@ export function ProcessWorkspace() {
           }
           return next;
         });
+
+        if (
+          parsed.status === "concluido" &&
+          parsed.filename &&
+          typeof parsed.content === "string"
+        ) {
+          const exists = successfulFilesRef.current.some(
+            (file) => file.filename === parsed.filename,
+          );
+          if (!exists) {
+            successfulFilesRef.current.push({
+              filename: parsed.filename,
+              content: parsed.content,
+            });
+          }
+        }
         return;
       }
 
       if (parsed.type === "rate_limited") {
+        setRateLimitMessage(parsed.message);
         return;
       }
 
       if (parsed.type === "done") {
         source.close();
         setActiveJob(null);
+        void finalizeDownload(successfulFilesRef.current);
       }
     };
 
@@ -92,16 +138,38 @@ export function ProcessWorkspace() {
     };
   }, [activeJob]);
 
+  async function finalizeDownload(files: TranscriptFile[]) {
+    if (files.length === 0) {
+      return;
+    }
+    setDownloadError(null);
+    setIsDownloading(true);
+    try {
+      await downloadTranscriptZip(files);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Could not create the zip file.";
+      setDownloadError(message);
+    } finally {
+      setIsDownloading(false);
+    }
+  }
+
   return (
     <div className="mt-12 space-y-10">
       <UrlInputForm
         isProcessing={isProcessing}
         onJobStarted={({ jobId, urls }) => {
           setStreamError(null);
+          setRateLimitMessage(null);
+          setDownloadError(null);
+          successfulFilesRef.current = [];
           setItems(createInitialItems(urls));
           setActiveJob({ jobId, urls });
         }}
       />
+
+      <RateLimitAlert message={rateLimitMessage} />
 
       {streamError ? (
         <p role="alert" className="text-sm text-accent">
@@ -109,7 +177,21 @@ export function ProcessWorkspace() {
         </p>
       ) : null}
 
+      {downloadError ? (
+        <p role="alert" className="text-sm text-accent">
+          {downloadError}
+        </p>
+      ) : null}
+
       <VideoStatusList items={items} />
+
+      <DownloadZipButton
+        disabled={isProcessing || isDownloading}
+        fileCount={successfulFiles.length}
+        onDownload={() => {
+          void finalizeDownload(successfulFiles);
+        }}
+      />
     </div>
   );
 }
